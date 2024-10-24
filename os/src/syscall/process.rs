@@ -7,8 +7,11 @@ use crate::{
 
 #[repr(C)]
 #[derive(Debug)]
+/// time entity
 pub struct TimeVal {
+    /// the time 
     pub sec: usize,
+    /// the time
     pub usec: usize,
 }
 

@@ -14,14 +14,14 @@ mod switch;
 #[allow(clippy::module_inception)]
 mod task;
 
-use core::intrinsics::discriminant_value;
+//use core::intrinsics::discriminant_value;
 
 use crate::config::{MAX_APP_NUM, MAX_SYSCALL_NUM};
 use crate::loader::{get_num_app, init_app_cx};
 use crate::sync::UPSafeCell;
 use lazy_static::*;
 use switch::__switch;
-use crate::timer::get_time;
+use crate::timer::get_time_ms;
 pub use task::{TaskControlBlock, TaskStatus};
 
 pub use context::TaskContext;
@@ -86,7 +86,7 @@ impl TaskManager {
         let mut inner = self.inner.exclusive_access();
         let task0 = &mut inner.tasks[0];
         task0.task_status = TaskStatus::Running;
-        task0.start_time = Some(get_time());
+        task0.start_time = Some(get_time_ms());
         let next_task_cx_ptr = &task0.task_cx as *const TaskContext;
         drop(inner);
         let mut _unused = TaskContext::zero_init();
@@ -130,7 +130,7 @@ impl TaskManager {
             let current = inner.current_task;
             inner.tasks[next].task_status = TaskStatus::Running;
             if inner.tasks[next].start_time.is_none(){
-                inner.tasks[next].start_time = Some(get_time());
+                inner.tasks[next].start_time = Some(get_time_ms());
             }
             inner.current_task = next;
             let current_task_cx_ptr = &mut inner.tasks[current].task_cx as *mut TaskContext;
@@ -164,7 +164,7 @@ impl TaskManager {
     fn get_current_task_run_time(&self)->usize{
         let inner = TASK_MANAGER.inner.exclusive_access();
         let current_task =  inner.current_task;
-        let now = get_time();
+        let now = get_time_ms();
         now-inner.tasks[current_task].start_time.unwrap()
     }
 }
